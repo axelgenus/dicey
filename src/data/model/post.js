@@ -3,8 +3,6 @@
 var mongoose = require('mongoose');
 
 let postSchema = new mongoose.Schema({
-	createdOn: { type: Date, default: Date.now },
-	updatedOn: { type: Date, default: Date.now },
 	location: String,
 	date: String,
 	campaign: mongoose.Schema.Types.ObjectId, //campaignID
@@ -13,24 +11,15 @@ let postSchema = new mongoose.Schema({
 	content: {
 		ingame: String,
 		outgame: String,
+	},
+	createdAt: Date,
+	updatedAt: Date
+}, {
+	timestamps:	{
+		createdAt: 'createdAt',
+		updatedAt: 'updatedAt'
 	}
 });
-
-/*
-postSchema.statics.create = function ({ location, date, recipients, content: { ingame, outgame }}) {
-	let post = new Post({
-		location: location,
-		date: date,
-		recipients: recipients, // check
-		content: {
-			ingame: ingame,
-			outgame: outgame
-		}
-	});
-
-	return post.save();
-}
-*/
 
 postSchema.methods.update = function ({ location, date, recipients, content: { ingame, outgame }}) {
 	this.updatedOn = new Date();
@@ -43,4 +32,4 @@ postSchema.methods.update = function ({ location, date, recipients, content: { i
 	return this.save();
 }
 
-module.exports.Model = mongoose.model("post", postSchema);
+module.exports = mongoose.model("post", postSchema);

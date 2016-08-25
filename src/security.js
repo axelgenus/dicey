@@ -5,19 +5,18 @@ var jwt = require('jsonwebtoken');
 
 var config = require('./config');
 
-// Load the certificate
-var cert = fs.readFileSync(config.security.cert);
+// Load the keys and set the encryption algorithm
+var algorithm = config.security.algorithm;
+var privatekey = fs.readFileSync(config.security.privatekey);
+var publickey = fs.readFileSync(config.security.publickey);
 
 // Get the user's authentication token
 module.exports.getAuthToken = function (user) {
-	let payload = {
-		username: user.username,
-		email: user.email
-	};
+	let payload = user.toSafeObject();
 
+	// Sign the payload asynchrously
 	return new Promise(function (resolve, reject) {
-		// Sign the payload asynchrously
-		jwt.sign(payload, cert, config.security.options, function (error, token) {
+		jwt.sign(payload, privatekey, { algorithm: algorithm }, function (error, token) {
 			if (error) {
 				reject(error);
 			}
@@ -28,16 +27,34 @@ module.exports.getAuthToken = function (user) {
 	});
 }
 
-// Check an user's authentication token
-module.exports.checkAuthToken = function(token) {
-	return new Promise(function (resolve, reject) {
-		jwt.verify(token, cert, function (error, payload) {
+// Attach the authentication data to the request
+module.exports.authenticate = function(request, response, next) {
+	let authorization = request.get('Authorization');
+
+	if (authorization === undefined) {
+		next();
+	}
+	else {
+		let matches = authorization.match(/^Bearer (.+)$/);
+
+		jwt.verify(matches[1], publickey, { algorithms: [algorithm] }, function (error, auth) {
 			if (error) {
-				reject(error);
+				next(error);
 			}
 			else {
-				resolve(payload);
+				request.auth = auth;
+				next();
 			}
 		});
-	});
+	}
+}
+
+// Handle access to restricted area 
+module.exports.requireAuthentication = function (request, response, next) {
+	if (!request.auth) {
+		next(new HttpError(403, "Restricted area"));
+	}
+	else {
+		next();
+	}
 }

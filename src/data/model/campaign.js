@@ -9,20 +9,15 @@ let campaignSchema = new mongoose.Schema({
 	description: String,
 	master: mongoose.Schema.Types.ObjectId, //userID
 	avatars: [Avatar.schema],
-	active: { type: Boolean, default: true }
+	active: { type: Boolean, default: true },
+	createdAt: Date,
+	updatedAt: Date
+}, {
+	timestamps:	{
+		createdAt: 'createdAt',
+		updatedAt: 'updatedAt'
+	}
 });
-
-/*
-campaignSchema.statics.create = function ({ title, description, master }) {
-	let campaign = new Campaign({
-		title: title,
-		description: description,
-		master: master
-	});
-
-	return campaign.save();
-}
-*/
 
 campaignSchema.methods.update = function ({ title, description }) {
 	this.title = title;

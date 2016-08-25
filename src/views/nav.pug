@@ -1,2 +1,23 @@
 nav
-	
+	a(href="/") Dicey
+
+	ul
+		li
+			a(href="/about") About
+		li
+			a(href="/campaigns") Campaigns
+
+	if authenticated
+		ul
+			li
+				img(src="/images/user.png")
+				a(href="/profile")= username
+			li
+				button Log out
+	else
+		ul
+			li
+				a(href="/login") Log in
+			li
+				a(href="/register") Register
+			

@@ -11,7 +11,5 @@ module.exports.handler = function (error, request, response, next) {
 }
 
 module.exports.notFound = function (request, response, next) {
-	let error = new HttpError(404, "Not found");
-
-	next(error);
+	next(new HttpError(404, "Not found"));
 }

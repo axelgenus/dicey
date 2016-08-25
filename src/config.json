@@ -4,9 +4,8 @@
 	"datasource": "mongodb://localhost:27017/dicey",
 
 	"security": {
-		"cert": "/run/media/alessandro/Secure/projects/dicey/authkey.pem",
-		"options": {
-			"algorithm": "ES512"
-		}
+		"algorithm": "ES512",
+		"privatekey": "/run/media/alessandro/Secure/projects/dicey/private.pem",
+		"publickey": "/run/media/alessandro/Secure/projects/dicey/public.pem"
 	}
 }

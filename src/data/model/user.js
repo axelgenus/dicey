@@ -1,45 +1,95 @@
 'use strict';
 
 var mongoose = require('mongoose');
+var bcrypt = require('bcrypt');
 
 let userSchema = new mongoose.Schema({
-	username: String,
-	password: String,
-	email: String,
-	roles: { type: [String], default: ['user'] },
-	createdOn: { type: Date, default: Date.now },
-	active: { type: Boolean, default: false }
+	username: {
+		type: String,
+		unique: true,
+    required: true,
+    trim: true
+  },
+	password: {
+		type: String,
+		required: true
+	},
+	email: {
+		type: String,
+		unique: true,
+    required: true,
+    trim: true
+	},
+	roles: {
+		type: [String],
+		default: ['user']
+	},
+	active: {
+		type: Boolean,
+		default: false
+	},
+	createdAt: Date,
+	updatedAt: Date
+}, {
+	timestamps:	{
+		createdAt: 'createdAt',
+		updatedAt: 'updatedAt'
+	}
 });
 
-/*
-userSchema.statics.create = function ({ username, password, email }) {
-	let user = new User({
-		username: username,
-		password: password, // TODO: secure the password
-		email: email
-	});
+// Check if the password has been modified and encrypt it
+userSchema.pre('save', function (next) {
+	let user = this;
 
-	return user.save();
+	if (user.isModified('password')) {
+		bcrypt.genSalt(10, function (error, salt) {
+		    if (error) {
+		      next(error);
+		    }
+		    else {
+				  bcrypt.hash(user.password, salt, function(error, hash) {
+				    if (error) {
+				      next(error);
+				    }
+				    else {
+			  	    user.password = hash;
+			  	    next();
+			  	  }
+				  });
+				}
+		});
+	}
+});
+
+// Return a "safe" object representing the user account
+userSchema.methods.toSafeObject = function () {
+	let user = this.toObject({ versionKey: false });
+	delete user.password;
+	delete user.active;
+
+	return user;
 }
-*/
 
+// Update the user's data
 userSchema.methods.update = function ({ password, email }) {
-	this.password = password; // TODO: secure the password
+	this.password = password;
 	this.email = email;
 
 	return this.save();
 }
 
+// Enable the user's account
 userSchema.methods.enable = function () {
 	this.active = true;
 
 	return this.save();
 }
 
+// Disable the user's account
 userSchema.methods.disable = function () {
 	this.active = false;
 
 	return this.save();
 }
 
-module.exports.Model = mongoose.model("user", userSchema);
+module.exports = mongoose.model('user', userSchema);

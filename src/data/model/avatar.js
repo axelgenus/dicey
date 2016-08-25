@@ -5,7 +5,14 @@ var mongoose = require('mongoose');
 var avatarSchema = new mongoose.Schema({
 	name: String,
 	picture: String,
-	sheet: mongoose.Schema.Types.Mixed
+	sheet: mongoose.Schema.Types.Mixed,
+	createdAt: Date,
+	updatedAt: Date
+}, {
+	timestamps:	{
+		createdAt: 'createdAt',
+		updatedAt: 'updatedAt'
+	}
 });
 
 avatarSchema.methods.update = function (data) {

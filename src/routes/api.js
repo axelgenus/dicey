@@ -1,28 +1,28 @@
 'use strict';
 
+var HttpError = require('../httperror.js');
 var User = require('../data/model/user');
 var Avatar = require('../data/model/avatar');
 var Campaign = require('../data/model/campaign');
 var Post = require('../data/model/post');
-
-var HttpError = require('../httperror.js');
 
 var router = require('express').Router();
 var parseBody = require('body-parser').json;
 
 // Attach the user model to the request if an userID parameter has been specified
 router.param('userID', function (request, response, next, userID) {
+	// IMPORTANT: DO *NOT* RETURN THE HASHED PASSWORD!!!
 	User.findById(userID, { password: false }).then(
 		(user) => {
 			if (user) {
 				request.user = user;
-				return next();
+				next();
 			}
-
-			var error = new HttpError(404, "User not found");
-			return next(error);
+			else {
+				next(new HttpError(404, "User not found"));
+			}
 		},
-		(error) => { return next(error); }
+		(error) => { next(error); }
 	);
 });
 
@@ -32,13 +32,13 @@ router.param('campaignID', function (request, response, next, campaignID) {
 		(campaign) => {
 			if (campaign) {
 				request.campaign = campaign;
-				return next();
+				next();
 			}
-
-			var error = new HttpError(404, "Campaign not found");
-			return next(error);
+			else {
+				next(new HttpError(404, "Campaign not found"));
+			}
 		},
-		(error) => { return next(error); }
+		(error) => { next(error); }
 	);
 });
 
@@ -48,11 +48,11 @@ router.param('avatarID', function (request, response, next, avatarID) {
 
 	if (avatar) {
 		request.avatar = avatar;
-		return next();
+		next();
 	}
-
-	var error = new HttpError(404, "Avatar not found");
-	return next(error);
+	else {
+		next(new HttpError(404, "Avatar not found"));
+	}
 });
 
 // Attach the post model to the request if a postID parameter has been specified
@@ -61,13 +61,13 @@ router.param('postID', function (request, response, next, postID) {
 		(post) => {
 			if (post) {
 				request.post = post;
-				return next();
+				next();
 			}
-
-			var error = new HttpError(404, "Post not found");
-			return next(error);
+			else {
+				next(new HttpError(404, "Post not found"));
+			}
 		},
-		(error) => { return next(error); }
+		(error) => { next(error); }
 	);
 });
 
@@ -76,11 +76,9 @@ router.get('/users', function (request, response, next) {
 	let limit = request.query.limit || 25;
 	let page = request.query.page || 1;
 
-	var query = User.find().limit(limit).skip(limit * (page - 1));
-
-	query.exec().then(
+	User.find().limit(limit).skip(limit * (page - 1)).then(
 		(users) => { response.json(users); },
-		(error) => { return next(error); }
+		(error) => { next(error); }
 	);
 });
 
@@ -97,7 +95,7 @@ router.put('/users/:userID', parseBody(), function (request, response, next) {
 
 	user.update(request.body).then(
 		(user) => { response.json(user); },
-		(error) => { return next(error); }
+		(error) => { next(error); }
 	);
 });
 
@@ -106,11 +104,9 @@ router.get('/campaigns', function (request, response, next) {
 	let limit = request.query.limit || 5;
 	let page = request.query.page || 1;
 
-	let query = Campaign.find().limit(limit).skip(limit * (page - 1));
-
-	query.exec().then(
+	Campaign.find().limit(limit).skip(limit * (page - 1)).then(
 		(campaigns) => { response.json(campaigns); },
-		(error) => { return next(error); }
+		(error) => { next(error); }
 	);
 });
 
@@ -123,7 +119,7 @@ router.get('/campaigns/:campaignID', function (request, response, next) {
 router.post('/campaigns', parseBody(), function (request, response, next) {
 	Campaign.create(request.body).then(
 		(result) => { response.status(201).json(result); },
-		(error) => { return next(error); }
+		(error) => { next(error); }
 	);
 });
 
@@ -133,7 +129,7 @@ router.put('/campaigns/:campaignID', parseBody(), function (request, response, n
 
 	campaign.update(request.body).then(
 		(result) => { response.json(camapign); },
-		(error) => { return next(error); }
+		(error) => { next(error); }
 	);
 });
 
@@ -143,7 +139,7 @@ router.delete('/campaigns/:campaignID', function (request, response, next) {
 
 	campaign.disable().then(
 		(result) => { response.json(camapign); },
-		(error) => { return next(error); }
+		(error) => { next(error); }
 	);
 });
 
@@ -169,7 +165,7 @@ router.post('/campaigns/:campaignID/avatars', parseBody(), function (request, re
 	campaign.avatars.push(avatar);
 	campaign.save().then(
 		(result) => { response.status(201).json(camapign); },
-		(error) => { return next(error); }
+		(error) => { next(error); }
 	);
 });
 
@@ -180,7 +176,7 @@ router.put('/campaigns/:campaignID/avatars/:avatarID', parseBody(), function (re
 
 	avatar.update(request.body).then(
 		(result) => { response.json(camapign); },
-		(error) => { return next(error); }
+		(error) => { next(error); }
 	);
 });
 
@@ -205,9 +201,7 @@ router.get('/campaigns/:campaignID/posts', function (request, response, next) {
 	let limit = request.query.limit || 20;
 	let page = request.query.page || 1;
 
-	let query = Post.Find({ campaign: request.params.campaignID }).limit(limit).skip(limit * (page - 1));
-
-	query.exec().then(
+	Post.Find({ campaign: request.params.campaignID }).limit(limit).skip(limit * (page - 1)).then(
 		(posts) => { response.json(posts) },
 		(error) => { next(error); }
 	);
@@ -224,7 +218,7 @@ router.get('/campaigns/:campaignID/posts/:postID', function (request, response, 
 router.post('/campaigns/:campaignID/posts', parseBody(), function (request, response, next) {
 	let post = new Post(request.body);
 
-	// post.campaign === request.params.campaignID; (check)
+	// TODO: check if post.campaign === request.params.campaignID
 
 	post.save().then(
 		(post) => { response.status(201).json(post); },

@@ -4,7 +4,11 @@ var router = require('express').Router();
 
 // Home page
 router.get('/', function (request, response) {
-	response.render('home');
+	response.render('home', {
+		title: 'Home',
+		lang: 'en',
+		authenticated: false
+	});
 });
 
 // Shows a login page
