@@ -20,8 +20,8 @@ let campaignSchema = new mongoose.Schema({
 });
 
 campaignSchema.methods.update = function ({ title, description }) {
-	this.title = title;
-	this.description = description;
+	if (title) this.title = title;
+	if (description) this.description = description;
 
 	return this.save();
 }

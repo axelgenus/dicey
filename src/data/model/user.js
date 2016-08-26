@@ -59,6 +59,9 @@ userSchema.pre('save', function (next) {
 				}
 		});
 	}
+	else {
+		next();
+	}
 });
 
 // Return a "safe" object representing the user account
@@ -71,9 +74,9 @@ userSchema.methods.toSafeObject = function () {
 }
 
 // Update the user's data
-userSchema.methods.update = function ({ password, email }) {
-	this.password = password;
-	this.email = email;
+userSchema.methods.update = function ({ email, password }) {
+	if (email) this.email = email;
+	if (password) this.password = password;
 
 	return this.save();
 }

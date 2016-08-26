@@ -53,7 +53,7 @@ router.post('/register', parseBody(), function (request, response, next) {
 });
 
 // Return the user's profile
-router.get('/profile', Security.authenticate, Security.requireAuthentication, function (request, response, next) {
+router.get('/profile', Security.authenticate, Security.requireUser, function (request, response, next) {
 	response.json(request.auth);
 });
 

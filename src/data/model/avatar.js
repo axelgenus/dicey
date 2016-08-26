@@ -15,10 +15,10 @@ var avatarSchema = new mongoose.Schema({
 	}
 });
 
-avatarSchema.methods.update = function (data) {
-	this.name = data.name;
-	this.picture = data.picture;
-	this.sheet = data.sheet;
+avatarSchema.methods.update = function ({ name, picture, sheet }) {
+	if (name) this.name = name;
+	if (picture) this.picture = picture;
+	if (sheet) this.sheet = sheet;
 
 	return this.parent.save();
 }

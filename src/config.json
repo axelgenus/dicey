@@ -5,7 +5,7 @@
 
 	"security": {
 		"algorithm": "ES512",
-		"privatekey": "/run/media/alessandro/Secure/projects/dicey/private.pem",
-		"publickey": "/run/media/alessandro/Secure/projects/dicey/public.pem"
+		"privatekey": "private.pem",
+		"publickey": "public.pem"
 	}
 }

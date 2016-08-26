@@ -13,11 +13,10 @@ var auth = require('./routes/auth');
 var api = require('./routes/api');
 var web = require('./routes/web');
 
-database.open(config.datasource).then(
-	() => { console.info('Connected to the database', config.datasource); },
-	(error) => { console.error('Error attempting connection to the database'); process.exit(1); }
-);
+// Open the database connection
+database.open(config.datasource);
 
+// Initialize ExpressJS
 const app = express();
 
 // Set the rendering engine to pug (JADE)
@@ -32,7 +31,7 @@ app.use('/auth', auth.router);
 app.use('/api.v1', security.authenticate, api.router);
 app.use(web.router);
 
-// Set error handlers
+// Set the catch-all and the error handler
 app.use(error.notFound);
 app.use(error.handler);
 

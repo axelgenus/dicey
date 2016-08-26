@@ -22,12 +22,11 @@ let postSchema = new mongoose.Schema({
 });
 
 postSchema.methods.update = function ({ location, date, recipients, content: { ingame, outgame }}) {
-	this.updatedOn = new Date();
-	this.location = location;
-	this.date = date;
-	this.recipients = recipients; //check
-	this.content.ingame = ingame;
-	this.content.outgame = outgame;
+	if (location) this.location = location;
+	if (date) this.date = date;
+	if (recipients) this.recipients = recipients; //check
+	if (ingame) this.content.ingame = ingame;
+	if (outgame) this.content.outgame = outgame;
 
 	return this.save();
 }

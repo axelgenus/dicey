@@ -2,18 +2,22 @@
 
 var mongoose = require('mongoose');
 
-module.exports.open = function (database) {
-	mongoose.Promise = global.Promise;
+mongoose.Promise = global.Promise;
 
+module.exports.open = function (database) {
 	// Close connection if already exists
 	mongoose.connection.close();
 
-	return new Promise(function (resolve, reject) {
-		mongoose.connect(database);
+	mongoose.connect(database);
 
-		let db = mongoose.connection;
-		db.on('error', (error) => { reject(error); });
-		db.once('open', () => { resolve(); });
+	let db = mongoose.connection;
+
+	mongoose.connection.on('error', (error) => {
+		console.error('Database error:', error.message);
+	});
+
+	mongoose.connection.once('open', () => {
+		console.info('Connected to the database', database);
 	});
 }
 

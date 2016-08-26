@@ -1,14 +1,17 @@
 'use strict';
 
 var fs = require('fs');
+var path = require('path');
 var jwt = require('jsonwebtoken');
 
 var config = require('./config');
+var error = require('./error');
+var HttpError = require('./httperror');
 
 // Load the keys and set the encryption algorithm
 var algorithm = config.security.algorithm;
-var privatekey = fs.readFileSync(config.security.privatekey);
-var publickey = fs.readFileSync(config.security.publickey);
+var privatekey = fs.readFileSync(path.join(__dirname, config.security.privatekey));
+var publickey = fs.readFileSync(path.join(__dirname, config.security.publickey));
 
 // Get the user's authentication token
 module.exports.getAuthToken = function (user) {
@@ -28,16 +31,17 @@ module.exports.getAuthToken = function (user) {
 }
 
 // Attach the authentication data to the request
-module.exports.authenticate = function(request, response, next) {
+module.exports.authenticate = function (request, response, next) {
 	let authorization = request.get('Authorization');
 
 	if (authorization === undefined) {
 		next();
 	}
 	else {
-		let matches = authorization.match(/^Bearer (.+)$/);
+		let [, token] = authorization.match(/^Bearer (.+)$/);
 
-		jwt.verify(matches[1], publickey, { algorithms: [algorithm] }, function (error, auth) {
+		// Verify the token
+		jwt.verify(token, publickey, { algorithms: [algorithm] }, function (error, auth) {
 			if (error) {
 				next(error);
 			}
@@ -49,12 +53,22 @@ module.exports.authenticate = function(request, response, next) {
 	}
 }
 
-// Handle access to restricted area 
-module.exports.requireAuthentication = function (request, response, next) {
-	if (!request.auth) {
-		next(new HttpError(403, "Restricted area"));
+// Handle access to users' area 
+module.exports.requireUser = function (request, response, next) {
+	if (request.auth && request.auth.roles.includes('user')) {
+		next();
 	}
 	else {
+		error.restrictedArea(request, response, next);
+	}
+}
+
+// Handle access to admin-only area
+module.exports.requireAdmin = function (request, response, next) {
+	if (request.auth && request.auth.roles.includes('admin')) {
 		next();
+	}
+	else {
+		error.restrictedArea(request, response, next);
 	}
 }
