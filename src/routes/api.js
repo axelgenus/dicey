@@ -10,6 +10,8 @@ var security = require('../security');
 var router = require('express').Router();
 var parseBody = require('body-parser').json;
 
+router.use(security.authenticate);
+
 // Attach the user model to the request if an userID parameter has been specified
 router.param('userID', function (request, response, next, userID) {
 	User.findById(userID).then(

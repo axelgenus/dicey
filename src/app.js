@@ -3,7 +3,6 @@
 var config = require('./config.json');
 
 var error = require('./error');
-var security = require('./security');
 var database = require('./data/database');
 
 var path = require('path');
@@ -28,7 +27,7 @@ app.use(express.static('public'));
 
 // Set routes
 app.use('/auth', auth.router);
-app.use('/api.v1', security.authenticate, api.router);
+app.use('/api.v1', api.router);
 app.use(web.router);
 
 // Set the catch-all and the error handler

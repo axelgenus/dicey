@@ -3,8 +3,6 @@
 var HttpError = require('./httperror');
 
 module.exports.handler = function (error, request, response, next) {
-	console.error(error);
-
 	response.status(error.statusCode || 500).json({
 		error: {
 			message: error.message

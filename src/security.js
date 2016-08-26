@@ -7,6 +7,7 @@ var jwt = require('jsonwebtoken');
 var config = require('./config');
 var error = require('./error');
 var HttpError = require('./httperror');
+var User = require('./data/model/user');
 
 // Load the keys and set the encryption algorithm
 var algorithm = config.security.algorithm;
@@ -15,11 +16,19 @@ var publickey = fs.readFileSync(path.join(__dirname, config.security.publickey))
 
 // Get the user's authentication token
 module.exports.getAuthToken = function (user) {
-	let payload = user.toSafeObject();
+	let payload = {
+		userID: user._id
+	}
+
+	let options = {
+		algorithm: algorithm,
+		expiresIn: '1d',
+		issuer: 'dicey'
+	}
 
 	// Sign the payload asynchrously
 	return new Promise(function (resolve, reject) {
-		jwt.sign(payload, privatekey, { algorithm: algorithm }, function (error, token) {
+		jwt.sign(payload, privatekey, options, function (error, token) {
 			if (error) {
 				reject(error);
 			}
@@ -41,13 +50,18 @@ module.exports.authenticate = function (request, response, next) {
 		let [, token] = authorization.match(/^Bearer (.+)$/);
 
 		// Verify the token
-		jwt.verify(token, publickey, { algorithms: [algorithm] }, function (error, auth) {
+		jwt.verify(token, publickey, { algorithms: [algorithm] }, function (error, payload) {
 			if (error) {
 				next(error);
 			}
 			else {
-				request.auth = auth;
-				next();
+				User.findById(payload.userID).then(
+					(user) => {
+						request.auth = user;
+						next();
+					},
+					(error) => { next(error); }
+				);
 			}
 		});
 	}
